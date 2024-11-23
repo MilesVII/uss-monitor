@@ -19,37 +19,46 @@ class BT(btMan: BluetoothManager) {
     private val scanner = adapter?.bluetoothLeScanner
 
     private var scanning = false
+    private var knownDevices = mutableMapOf<String, BluetoothDevice>()
+    private var connectedDevice: BluetoothDevice? = null
 
     @SuppressLint("MissingPermission")
-    suspend fun scanLeDevice(): Array<BluetoothDevice> {
-        if (scanner == null) return emptyArray()
+    fun scanLeDevice(onFound: (device: BluetoothDevice) -> Unit) {
+        if (scanner == null || scanning) return
 
-        return suspendCoroutine {
-            cont ->
-
-            val devices = mutableListOf<BluetoothDevice>()
-
-            val scannerCB: ScanCallback = object : ScanCallback() {
-                override fun onScanResult(callbackType: Int, result: ScanResult) {
-                    super.onScanResult(callbackType, result)
-                    devices.add(result.device)
-                }
-            }
-
-            if (!scanning) {
-                devices.clear()
-                runBlocking {
-                    launch {
-                        delay(SCAN_PERIOD)
-                        scanning = false
-                        scanner.stopScan(scannerCB)
-                        cont.resume(devices.toTypedArray())
-                    }
-                    scanning = true
-                    scanner.startScan(scannerCB)
-                }
+        val scannerCB: ScanCallback = object : ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                super.onScanResult(callbackType, result)
+                onFound(result.device)
+                knownDevices[result.device.address] = result.device
             }
         }
+
+        knownDevices.clear()
+        runBlocking {
+            launch {
+                delay(SCAN_PERIOD)
+                scanning = false
+                scanner.stopScan(scannerCB)
+            }
+            scanning = true
+            scanner.startScan(scannerCB)
+        }
+    }
+
+    fun connect(address: String): Boolean {
+        adapter?.let { adapter ->
+            try {
+                connectedDevice = adapter.getRemoteDevice(address)
+                return true
+            } catch (exception: IllegalArgumentException) {
+                return false
+            }
+            // connect to the GATT server on the device
+        } ?: run {
+            return false
+        }
+
     }
 
 }

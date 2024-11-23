@@ -35,7 +35,8 @@ class WebSocketService : Service() {
         }
 
         val platform = Platform(bluetoothManager)
-        webSocketServer = Server(platform) { message: String ->
+        webSocketServer = Server(platform) {
+            message: String ->
             Toast
                 .makeText(
                     this,
