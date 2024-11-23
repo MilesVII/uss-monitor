@@ -9,8 +9,6 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 
 import kotlinx.coroutines.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 const val SCAN_PERIOD: Long = 7000
 

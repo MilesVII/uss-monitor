@@ -49,15 +49,15 @@ class Protocol(
             val response = JSONObject()
 
             try {
-                val address = payload?.getString("address") ?: throw JSONException("");
+                val address = payload?.getString("address") ?: throw JSONException("")
 
                 val success = connector.connect(address)
-                response.put("success", success);
+                response.put("success", success)
                 if (success)
-                    response.put("error", "address not found or adapter unavailable");
+                    response.put("error", "address not found or adapter unavailable")
             } catch (e: JSONException) {
-                response.put("success", false);
-                response.put("error", "no address provided");
+                response.put("success", false)
+                response.put("error", "no address provided")
             }
 
             response
